@@ -216,8 +216,8 @@ function M.setup(user_config)
   config = vim.tbl_extend('force', config, user_config)
 end
 
--- Picks a window to jump to, and makes it the active window.
-function M.pick()
+---@return number? winr of the chosen window, or nil if not chosen
+function M.pick_window()
   local windows = {}
 
   for _, id in ipairs(api.nvim_tabpage_list_wins(0)) do
@@ -268,6 +268,12 @@ function M.pick()
 
   hide_hints(hints_state, true)
 
+  return window
+end
+
+-- Picks a window to jump to, and makes it the active window.
+function M.pick()
+  local window = M.pick_window()
   if window then
     api.nvim_set_current_win(window)
   end
