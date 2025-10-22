@@ -230,7 +230,7 @@ function M.pick_window(options)
     include_current = false,
   }
   ---@type PickWindowOptions
-  local opts = vim.tbl_extend('force', default, options)
+  local opts = vim.tbl_extend('force', default, options or {})
 
   for _, id in ipairs(api.nvim_tabpage_list_wins(0)) do
     local conf = api.nvim_win_get_config(id)
