@@ -61,7 +61,9 @@ local config = {
 local hints = {}
 
 -- Returns a table that maps the hint keys to their corresponding windows.
-local function window_keys(windows)
+---@param windows number[]
+---@param include_current boolean
+local function window_keys(windows, include_current)
   local mapping = {}
   local chars = config.chars
   local nrs = {}
@@ -85,7 +87,7 @@ local function window_keys(windows)
     -- We skip the current window here so that we still "reserve" it the
     -- character, but don't include it in the output. This ensures that window X
     -- always gets hint Y, regardless of what the current active window is.
-    if nr ~= current then
+    if include_current or nr ~= current then
       local key = chars[index]
 
       if mapping[key] then
@@ -216,9 +218,19 @@ function M.setup(user_config)
   config = vim.tbl_extend('force', config, user_config)
 end
 
+---@class PickWindowOptions
+---@field include_current boolean
+
 ---@return number? winr of the chosen window, or nil if not chosen
-function M.pick_window()
+---@param options PickWindowOptions?
+function M.pick_window(options)
   local windows = {}
+  ---@type PickWindowOptions
+  local default = {
+    include_current = false,
+  }
+  ---@type PickWindowOptions
+  local opts = vim.tbl_extend('force', default, options)
 
   for _, id in ipairs(api.nvim_tabpage_list_wins(0)) do
     local conf = api.nvim_win_get_config(id)
@@ -230,7 +242,7 @@ function M.pick_window()
     end
   end
 
-  local window_keys = window_keys(windows)
+  local window_keys = window_keys(windows, opts.include_current)
   local hints_state = show_hints(window_keys, true)
   local key = get_char()
   local window = nil
